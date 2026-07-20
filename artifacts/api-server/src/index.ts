@@ -23,6 +23,12 @@ app.listen(port, (err) => {
   }
 
   logger.info({ port }, "Server listening");
+
+  // Self-ping every 4 minutes to keep the repl awake on the free plan
+  setInterval(() => {
+    fetch(`http://localhost:${port}/api/healthz`)
+      .catch(() => null); // silently ignore failures
+  }, 4 * 60 * 1000);
 });
 
 // Start the Discord bot alongside the HTTP server
