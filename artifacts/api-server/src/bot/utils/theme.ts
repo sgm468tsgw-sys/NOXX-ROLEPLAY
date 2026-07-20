@@ -5,11 +5,11 @@ import {
 
 export const COLORS = {
   primary: 0x7b2fbe as ColorResolvable,   // vivid purple
-  dark: 0x4a1a7a as ColorResolvable,       // dark purple
-  success: 0x5b8a3c as ColorResolvable,    // green
-  error: 0xe74c3c as ColorResolvable,      // red
-  warning: 0xf39c12 as ColorResolvable,    // amber
-  black: 0x0d0d0d as ColorResolvable,      // near-black
+  dark: 0x1a0533 as ColorResolvable,       // near-black purple
+  success: 0x5865f2 as ColorResolvable,    // Discord blue / blurple
+  error: 0x9b30d9 as ColorResolvable,      // bright purple (errors)
+  warning: 0x4f46e5 as ColorResolvable,    // indigo-blue
+  black: 0x0d0d0d as ColorResolvable,      // pure black
 };
 
 export const FOOTER = { text: "FiveM Whitelist Bot", iconURL: undefined as string | undefined };
