@@ -174,13 +174,12 @@ async function openTicket(interaction: ButtonInteraction) {
     if (logChannel) {
       await logChannel.send({
         embeds: [
-          infoEmbed("Ticket Opened", "")
-            .spliceFields(0, 0,
+          infoEmbed("Ticket Opened", "A new support ticket has been opened.")
+            .addFields(
               { name: "User", value: `<@${user.id}> (${user.tag})`, inline: true },
               { name: "Channel", value: `<#${ticketChannel.id}>`, inline: true },
               { name: "Opened At", value: `<t:${Math.floor(Date.now() / 1000)}:F>`, inline: true },
-            )
-            .setDescription("A new support ticket has been opened."),
+            ),
         ],
       });
     }

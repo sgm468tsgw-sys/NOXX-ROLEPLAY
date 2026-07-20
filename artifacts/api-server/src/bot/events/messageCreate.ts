@@ -62,7 +62,33 @@ async function handleWhitelist(message: import("discord.js").Message) {
   }
 
   // Grant the whitelist role
-  await member.roles.add(role, `Whitelisted via #${(message.channel as TextChannel).name}`);
+  try {
+    await member.roles.add(role, `Whitelisted via #${(message.channel as TextChannel).name}`);
+  } catch (err: unknown) {
+    const isPermError =
+      typeof err === "object" &&
+      err !== null &&
+      "code" in err &&
+      (err as { code: unknown }).code === 50013;
+
+    if (isPermError) {
+      const notice = await message.channel.send({
+        embeds: [
+          baseEmbed(COLORS.error)
+            .setTitle("❌  Bot Missing Permissions")
+            .setDescription(
+              [
+                `I don't have permission to assign <@&${role.id}>.`,
+                "",
+                "**Fix:** In your server's role list, drag the bot's role **above** the whitelist role, then try again.",
+              ].join("\n"),
+            ),
+        ],
+      });
+      setTimeout(() => notice.delete().catch(() => null), 15000);
+    }
+    throw err;
+  }
 
   // Remove the "need whitelisted" role if the player has it
   if (config.needWhitelistedRoleId && member.roles.cache.has(config.needWhitelistedRoleId)) {
