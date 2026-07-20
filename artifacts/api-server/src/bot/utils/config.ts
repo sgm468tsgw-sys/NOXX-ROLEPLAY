@@ -15,6 +15,7 @@ export interface TicketInfo {
 export interface GuildConfig {
   logChannelId?: string;
   whitelistRoleId?: string;
+  needWhitelistedRoleId?: string;
   whitelistChannelId?: string;
   tickets: Record<string, TicketInfo>; // channelId -> info
 }

@@ -63,6 +63,15 @@ async function handleWhitelist(message: import("discord.js").Message) {
 
   // Grant the whitelist role
   await member.roles.add(role, `Whitelisted via #${(message.channel as TextChannel).name}`);
+
+  // Remove the "need whitelisted" role if the player has it
+  if (config.needWhitelistedRoleId && member.roles.cache.has(config.needWhitelistedRoleId)) {
+    const needRole = message.guild.roles.cache.get(config.needWhitelistedRoleId);
+    if (needRole) {
+      await member.roles.remove(needRole, "Player has been whitelisted").catch(() => null);
+    }
+  }
+
   await message.delete().catch(() => null);
 
   const successMsg = await message.channel.send({
