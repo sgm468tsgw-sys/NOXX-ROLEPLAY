@@ -1,3 +1,5 @@
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import {
   SlashCommandBuilder,
   PermissionFlagsBits,
@@ -5,10 +7,14 @@ import {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
+  AttachmentBuilder,
   type ChatInputCommandInteraction,
   type TextChannel,
 } from "discord.js";
 import { baseEmbed, errorEmbed, COLORS } from "../utils/theme.js";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const LOGO_PATH = path.resolve(__dirname, "../../../../../attached_assets/088771F1-76CD-4ECC-A7A6-92DA24E8D38F_1784586111164.png");
 
 export const data = new SlashCommandBuilder()
   .setName("post-panel")
@@ -30,6 +36,8 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
   const target = (interaction.options.getChannel("channel") ?? interaction.channel) as TextChannel;
 
+  const logo = new AttachmentBuilder(LOGO_PATH, { name: "noxx-logo.png" });
+
   const embed = baseEmbed(COLORS.primary)
     .setTitle("🎫  Support Tickets")
     .setDescription(
@@ -45,8 +53,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         "• Staff will close resolved tickets",
       ].join("\n"),
     )
-    .setThumbnail(interaction.guild?.iconURL() ?? null)
-    .setImage("https://i.imgur.com/0000000.png"); // placeholder — remove if not needed
+    .setImage("attachment://noxx-logo.png");
 
   const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
     new ButtonBuilder()
@@ -56,7 +63,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
       .setStyle(ButtonStyle.Primary),
   );
 
-  await target.send({ embeds: [embed], components: [row] });
+  await target.send({ embeds: [embed], components: [row], files: [logo] });
 
   await interaction.reply({
     embeds: [
