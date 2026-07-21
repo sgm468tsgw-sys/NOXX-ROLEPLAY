@@ -12,7 +12,7 @@ import {
 } from "discord.js";
 import { baseEmbed, errorEmbed, COLORS } from "../utils/theme.js";
 
-const LOGO_PATH = path.resolve(process.cwd(), "../../attached_assets/088771F1-76CD-4ECC-A7A6-92DA24E8D38F_1784586111164.png");
+const LOGO_PATH = path.join(process.cwd(), "attached_assets", "088771F1-76CD-4ECC-A7A6-92DA24E8D38F_1784586111164.png");
 
 export const data = new SlashCommandBuilder()
   .setName("post-panel")

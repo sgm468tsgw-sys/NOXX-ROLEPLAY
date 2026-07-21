@@ -1,0 +1,12 @@
+node_modules
+**/node_modules
+**/dist
+**/.tsbuildinfo
+artifacts/mockup-sandbox
+lib/api-client-react
+lib/api-spec
+scripts
+.local
+.agents
+.git
+*.log
