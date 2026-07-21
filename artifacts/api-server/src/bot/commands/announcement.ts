@@ -12,22 +12,21 @@ import { errorEmbed, COLORS } from "../utils/theme.js";
 const GALAXY_PURPLE = 0x6a0dad;
 
 function galaxyEmbed(title: string, message: string): EmbedBuilder {
-  const stars = ["✦", "✧", "⋆", "˚", "·", "★", "✩"];
-  const randomStars = () =>
-    Array.from({ length: 6 }, () => stars[Math.floor(Math.random() * stars.length)]).join("  ");
+  const divider = "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━";
+  const starRow  = "✦ ˚ · ★  ✧ ⋆ ˚ · ✦ ★  ⋆ ✧ ˚ · ✦";
 
   return new EmbedBuilder()
     .setColor(GALAXY_PURPLE)
     .setTitle(`🌌  ${title}`)
     .setDescription(
       [
-        `\`\`\``,
-        `  ${randomStars()}`,
-        `\`\`\``,
+        `> ${starRow}`,
+        `> ${divider}`,
+        ``,
         message,
-        `\`\`\``,
-        `  ${randomStars()}`,
-        `\`\`\``,
+        ``,
+        `> ${divider}`,
+        `> ${starRow}`,
       ].join("\n"),
     )
     .setFooter({
