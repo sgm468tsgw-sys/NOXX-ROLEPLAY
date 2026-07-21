@@ -6,95 +6,152 @@ import {
   type ChatInputCommandInteraction,
   type TextChannel,
 } from "discord.js";
-import { errorEmbed, COLORS } from "../utils/theme.js";
+import { errorEmbed } from "../utils/theme.js";
 
-// Galaxy-themed deep purple/black palette
-const GALAXY_PURPLE = 0x6a0dad;
+const COLOR = 0x6a0dad;
 
-function galaxyEmbed(title: string, message: string): EmbedBuilder {
-  const divider = "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━";
-  const starRow  = "✦ ˚ · ★  ✧ ⋆ ˚ · ✦ ★  ⋆ ✧ ˚ · ✦";
-
+function createAnnouncement(title: string, message: string) {
   return new EmbedBuilder()
-    .setColor(GALAXY_PURPLE)
-    .setTitle(`🌌  ${title}`)
+    .setColor(COLOR)
+    .setAuthor({
+      name: "🌌 NOXX ROLEPLAY",
+    })
+    .setTitle(`✦ ${title}`)
     .setDescription(
-      [
-        `> ${starRow}`,
-        `> ${divider}`,
-        ``,
-        message,
-        ``,
-        `> ${divider}`,
-        `> ${starRow}`,
-      ].join("\n"),
+`╔══════════════════════════════════════╗
+
+## 💜 ${title}
+
+${message}
+
+══════════════════════════════════════
+
+✨ **Stay Respectful**
+🌆 **Build Your Story**
+🖤 **Welcome to NOXX Roleplay**
+
+╚══════════════════════════════════════╝`
+    )
+    .setThumbnail(
+      "https://cdn.discordapp.com/embed/avatars/0.png" // Replace with your logo URL later
     )
     .setFooter({
-      text: "✦ Noxx Roleplay  ·  Official Announcement",
+      text: "✦ Official NOXX Roleplay Announcement ✦",
     })
     .setTimestamp();
 }
 
 export const data = new SlashCommandBuilder()
   .setName("announcement")
-  .setDescription("Send a galaxy-themed announcement to a channel.")
+  .setDescription("Send a holographic styled announcement.")
   .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
-  .addStringOption((opt) =>
-    opt
+
+  .addStringOption(option =>
+    option
       .setName("message")
-      .setDescription("The announcement message")
+      .setDescription("Announcement message")
       .setRequired(true)
-      .setMaxLength(1800),
+      .setMaxLength(1800)
   )
-  .addStringOption((opt) =>
-    opt
+
+  .addStringOption(option =>
+    option
       .setName("title")
-      .setDescription("Title of the announcement (default: Announcement)")
+      .setDescription("Announcement title")
       .setRequired(false)
-      .setMaxLength(80),
   )
-  .addRoleOption((opt) =>
-    opt
+
+  .addRoleOption(option =>
+    option
       .setName("role")
-      .setDescription("Role to ping with the announcement")
-      .setRequired(false),
+      .setDescription("Role to ping")
   )
-  .addChannelOption((opt) =>
-    opt
+
+  .addBooleanOption(option =>
+    option
+      .setName("everyone")
+      .setDescription("Ping everyone")
+  )
+
+  .addBooleanOption(option =>
+    option
+      .setName("here")
+      .setDescription("Ping here")
+  )
+
+  .addChannelOption(option =>
+    option
       .setName("channel")
-      .setDescription("Channel to send the announcement in (defaults to current)")
+      .setDescription("Channel to send to")
       .addChannelTypes(ChannelType.GuildText)
-      .setRequired(false),
   );
 
 export async function execute(interaction: ChatInputCommandInteraction) {
-  if (!interaction.guildId) {
-    await interaction.reply({
-      embeds: [errorEmbed("Error", "This command can only be used in a server.")],
+  if (!interaction.guild) {
+    return interaction.reply({
+      embeds: [
+        errorEmbed(
+          "Error",
+          "This command can only be used inside a server."
+        ),
+      ],
       ephemeral: true,
     });
-    return;
   }
 
   const message = interaction.options.getString("message", true);
-  const title = interaction.options.getString("title") ?? "Announcement";
+  const title =
+    interaction.options.getString("title") ?? "Official Announcement";
+
   const role = interaction.options.getRole("role");
-  const target = (interaction.options.getChannel("channel") ?? interaction.channel) as TextChannel;
+  const everyone = interaction.options.getBoolean("everyone");
+  const here = interaction.options.getBoolean("here");
 
-  const embed = galaxyEmbed(title, message);
+  const channel = (interaction.options.getChannel("channel") ??
+    interaction.channel) as TextChannel;
 
-  await target.send({
-    content: role ? `<@&${role.id}>` : undefined,
-    embeds: [embed],
-  });
+  let ping = "";
 
-  await interaction.reply({
-    embeds: [
-      new EmbedBuilder()
-        .setColor(GALAXY_PURPLE)
-        .setTitle("🌌  Announcement Sent")
-        .setDescription(`Your announcement has been posted in <#${target.id}>.`),
-    ],
-    ephemeral: true,
-  });
+  if (everyone) ping += "@everyone ";
+  if (here) ping += "@here ";
+  if (role) ping += `<@&${role.id}>`;
+
+  const embed = createAnnouncement(title, message);
+
+  try {
+    await channel.send({
+      content: ping || undefined,
+      embeds: [embed],
+      allowedMentions: {
+        parse: ["everyone", "roles"],
+      },
+    });
+
+    // Automatically publish if it's an Announcement channel
+    if (channel.type === ChannelType.GuildAnnouncement) {
+      await channel.crosspost().catch(() => {});
+    }
+
+    await interaction.reply({
+      embeds: [
+        new EmbedBuilder()
+          .setColor(0x57f287)
+          .setTitle("✅ Announcement Sent")
+          .setDescription(`Your announcement was successfully sent to ${channel}.`),
+      ],
+      ephemeral: true,
+    });
+  } catch (error) {
+    console.error(error);
+
+    await interaction.reply({
+      embeds: [
+        errorEmbed(
+          "Failed",
+          "I couldn't send the announcement to that channel."
+        ),
+      ],
+      ephemeral: true,
+    });
+  }
 }
