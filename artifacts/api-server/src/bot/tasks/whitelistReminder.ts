@@ -1,56 +1,87 @@
-import type { Client, TextChannel } from "discord.js";
+import type { Client, TextBasedChannel } from "discord.js";
 import { baseEmbed, COLORS } from "../utils/theme.js";
 import { getGuildConfig } from "../utils/config.js";
 import { logger } from "../../lib/logger.js";
 
 const INTERVAL_MS = 30 * 60 * 1000; // 30 minutes
 
+let reminderInterval: NodeJS.Timeout | null = null;
+
 async function sendReminder(client: Client): Promise<void> {
-  for (const [guildId, guild] of client.guilds.cache) {
+  for (const guild of client.guilds.cache.values()) {
     try {
-      const config = await getGuildConfig(guildId);
+      const config = await getGuildConfig(guild.id);
 
-      if (!config.whitelistChannelId || !config.needWhitelistedRoleId) continue;
+      if (!config.whitelistChannelId || !config.needWhitelistedRoleId) {
+        continue;
+      }
 
-      const channel = guild.channels.cache.get(config.whitelistChannelId) as TextChannel | undefined;
-      if (!channel) continue;
+      const channel = guild.channels.cache.get(config.whitelistChannelId);
 
-      await channel.send({
+      if (!channel || !channel.isTextBased()) {
+        logger.warn(
+          { guildId: guild.id },
+          "Whitelist channel not found or is not text-based."
+        );
+        continue;
+      }
+
+      await (channel as TextBasedChannel).send({
         content: `<@&${config.needWhitelistedRoleId}>`,
+        allowedMentions: {
+          roles: [config.needWhitelistedRoleId],
+        },
         embeds: [
           baseEmbed(COLORS.primary)
-            .setTitle("🎮  Want to Join Noxx Roleplay?")
-            .setDescription(
-              [
-                "You're one step away from accessing the server!",
-                "",
-                "**To get whitelisted**, simply type `wl` right here in this channel.",
-                "It takes less than a second and grants you instant access.",
-                "",
-                "🌆  **Noxx Roleplay** — where your story begins.",
-              ].join("\n"),
-            )
-            .setFooter({ text: "Noxx Roleplay Whitelist System" })
+            .setTitle("💜🌆 NOXX ROLEPLAY • WHITELIST 🌆🖤")
+            .setDescription([
+              "## Ready to Join Noxx Roleplay?",
+              "",
+              "🚀 Type **`wl`** in this channel to get **instantly whitelisted.**",
+              "",
+              "✅ Instant Access",
+              "🎭 Begin Your RP Journey",
+              "💼 Jobs • Gangs • Businesses",
+              "🚓 EMS • PD • DOJ",
+              "",
+              "⚡ **Your story starts here.**",
+            ].join("\n"))
+            .setFooter({
+              text: "Noxx Roleplay • Instant Whitelist",
+            })
             .setTimestamp(),
         ],
       });
 
-      logger.info({ guildId }, "Sent whitelist reminder");
+      logger.info(
+        { guildId: guild.id },
+        "Whitelist reminder sent successfully."
+      );
     } catch (err) {
-      logger.warn({ err, guildId }, "Failed to send whitelist reminder for guild");
+      logger.error(
+        { err, guildId: guild.id },
+        "Failed to send whitelist reminder."
+      );
     }
   }
 }
 
 export function startWhitelistReminder(client: Client): void {
-  // Fire immediately, then every 30 minutes
-  sendReminder(client).catch((err) =>
-    logger.error({ err }, "Error in initial whitelist reminder"),
-  );
+  if (reminderInterval) {
+    logger.info("Whitelist reminder is already running.");
+    return;
+  }
 
-  setInterval(() => {
+  // Uncomment this if you want one reminder immediately when the bot starts.
+  // sendReminder(client).catch(err =>
+  //   logger.error({ err }, "Initial whitelist reminder failed.")
+  // );
+
+  reminderInterval = setInterval(() => {
     sendReminder(client).catch((err) =>
-      logger.error({ err }, "Error in whitelist reminder interval"),
+      logger.error({ err }, "Whitelist reminder interval failed.")
     );
   }, INTERVAL_MS);
+
+  logger.info("Whitelist reminder started.");
 }
