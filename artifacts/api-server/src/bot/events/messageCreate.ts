@@ -116,7 +116,6 @@ async function handleWhitelist(message: import("discord.js").Message) {
     ],
   });
 
-  setTimeout(() => successMsg.delete().catch(() => null), 15000);
 
   // Log to log channel
   if (config.logChannelId) {
