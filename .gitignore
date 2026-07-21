@@ -2,9 +2,12 @@
 
 # compiled output
 dist
+!artifacts/api-server/dist/
 tmp
 out-tsc
 *.tsbuildinfo
+# skip heavy source maps in git
+artifacts/api-server/dist/*.map
 .expo
 .expo-shared
 

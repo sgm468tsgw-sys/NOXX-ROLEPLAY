@@ -1,44 +1,52 @@
-# [Project name]
+# Noxx Roleplay — FiveM Discord Bot
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+A FiveM-focused Discord bot with a purple & black theme, full ticket system, and whitelist role management.
 
 ## Run & Operate
 
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
-- `pnpm run typecheck` — full typecheck across all packages
-- `pnpm run build` — typecheck + build all packages
-- `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
-- `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Required env: `DATABASE_URL` — Postgres connection string
+- `pnpm --filter @workspace/api-server run dev` — run the API server + Discord bot
+- Required secrets: `DISCORD_TOKEN`, `DISCORD_CLIENT_ID`
 
 ## Stack
 
 - pnpm workspaces, Node.js 24, TypeScript 5.9
-- API: Express 5
-- DB: PostgreSQL + Drizzle ORM
-- Validation: Zod (`zod/v4`), `drizzle-zod`
-- API codegen: Orval (from OpenAPI spec)
-- Build: esbuild (CJS bundle)
+- Discord: discord.js v14
+- HTTP: Express 5 (hosts healthcheck alongside bot)
+- Build: esbuild (ESM bundle)
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/api-server/src/bot/` — all bot code
+  - `commands/` — slash commands (setup-logs, post-panel, setup-whitelist-role, setup-whitelist-channel)
+  - `events/` — ready, interactionCreate, messageCreate
+  - `utils/config.ts` — guild settings stored in `data/guild-config.json`
+  - `utils/theme.ts` — purple/black embed helpers
 
-## Architecture decisions
+## Bot Commands
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+| Command | Permission | Description |
+|---|---|---|
+| `/setup-logs #channel` | Admin | Set channel for ticket + whitelist logs |
+| `/post-panel [#channel]` | Admin | Post the ticket panel with Open button |
+| `/setup-whitelist-role @role` | Admin | Set role granted on whitelist |
+| `/setup-whitelist-channel #channel` | Admin | Set channel where users type `wl` |
 
-## Product
+## Whitelist Flow
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+1. Admin runs `/setup-whitelist-role` and `/setup-whitelist-channel`
+2. User types `wl` in the designated channel
+3. Bot deletes the message, grants the role, logs to log channel
+
+## Ticket Flow
+
+1. Admin runs `/post-panel` in desired channel
+2. User clicks "Open a Ticket" → private channel created
+3. Staff handles issue, clicks "Close Ticket" → transcript saved + channel deleted
 
 ## User preferences
 
-_Populate as you build — explicit user instructions worth remembering across sessions._
-
-## Gotchas
-
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- Purple & black theme throughout all embeds
+- FiveM server branding
 
 ## Pointers
 
