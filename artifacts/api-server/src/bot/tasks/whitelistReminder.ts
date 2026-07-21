@@ -1,3 +1,4 @@
+
 import type { Client, TextBasedChannel } from "discord.js";
 import { baseEmbed, COLORS } from "../utils/theme.js";
 import { getGuildConfig } from "../utils/config.js";
@@ -7,7 +8,10 @@ const INTERVAL_MS = 60 * 60 * 1000; // 1 Hour
 
 let reminderInterval: NodeJS.Timeout | null = null;
 
-async function sendReminder(client: Client): Promise<void> {
+/**
+ * Sends the whitelist reminder to every configured guild.
+ */
+export async function sendReminder(client: Client): Promise<void> {
   for (const guild of client.guilds.cache.values()) {
     try {
       const config = await getGuildConfig(guild.id);
@@ -26,67 +30,56 @@ async function sendReminder(client: Client): Promise<void> {
         continue;
       }
 
-      const textChannel = channel as TextBasedChannel;
-
-      // Delete previous whitelist reminder
+      // Delete previous reminder
       try {
-        const messages = await textChannel.messages.fetch({ limit: 20 });
+        const messages = await (channel as TextBasedChannel).messages.fetch({
+          limit: 10,
+        });
 
-        const oldReminder = messages.find(
+        const previousReminder = messages.find(
           (m) =>
             m.author.id === client.user?.id &&
             m.embeds.length > 0 &&
-            m.embeds[0].title?.includes("WELCOME TO NOXX ROLEPLAY")
+            m.embeds[0].title?.includes("WHITELIST")
         );
 
-        if (oldReminder) {
-          await oldReminder.delete().catch(() => {});
+        if (previousReminder) {
+          await previousReminder.delete().catch(() => {});
         }
       } catch {}
 
-      await textChannel.send({
+      await (channel as TextBasedChannel).send({
         content: `<@&${config.needWhitelistedRoleId}>`,
         allowedMentions: {
           roles: [config.needWhitelistedRoleId],
         },
         embeds: [
           baseEmbed(COLORS.primary)
-            .setTitle("👑💜 WELCOME TO NOXX ROLEPLAY 💙🖤")
-            .setDescription([
-              "# 🌆 Welcome to the City!",
-              "",
-              "Thank you for joining **NOXX Roleplay**! We're excited to have you become part of our community.",
-              "",
-              "### 🚀 Getting Started",
-              "💬 Type **`wl`** in this channel to receive your **instant whitelist**.",
-              "",
-              "## 🌟 What You'll Find",
-              "🚓 Active Police, EMS & DOJ",
-              "💼 Player-Owned Businesses",
-              "🔫 Gangs & Criminal Progression",
-              "🚗 Custom Vehicles",
-              "🏙️ Premium Custom MLOs",
-              "🏠 Housing & Player Activities",
-              "💰 Balanced Economy",
-              "🎭 Serious Roleplay with Fun Experiences",
-              "",
-              "## ❤️ Why Choose NOXX?",
-              "🤝 Friendly Community",
-              "🛠️ Active Staff Team",
-              "📈 Frequent Updates",
-              "🎉 New Content Added Regularly",
-              "",
-              "📢 Invite your friends, get whitelisted, and begin creating unforgettable stories together.",
-              "",
-              "💜 **We can't wait to see you in the city!**",
-              "",
-              "🌆 **NOXX ROLEPLAY — WHERE YOUR STORY STARTS.** 👑",
-            ].join("\n"))
-            .setThumbnail(client.user?.displayAvatarURL() ?? undefined)
-            .setImage("https://i.imgur.com/YOUR_SERVER_BANNER.png") // Replace with your banner URL
+            .setTitle("👑💜 NOXX ROLEPLAY • WHITELIST 💙🖤")
+            .setDescription(
+              [
+                "# 🚨 GET WHITELISTED NOW 🚨",
+                "",
+                "Ready to enter the city?",
+                "",
+                "💬 Type **`wl`** in this channel.",
+                "",
+                "✅ Instant Whitelist",
+                "🚓 Police • EMS • DOJ",
+                "💼 Player-Owned Businesses",
+                "🔫 Gangs • Custom Drugs",
+                "🚗 Custom Vehicles",
+                "🏙️ Custom MLOs",
+                "💰 Balanced Economy",
+                "",
+                "📢 Invite your friends and start your story today!",
+                "",
+                "💜 **NOXX ROLEPLAY — WHERE YOUR STORY STARTS.**",
+              ].join("\n")
+            )
+            .setThumbnail(client.user?.displayAvatarURL() ?? null)
             .setFooter({
-              text: "💜 NOXX Roleplay • Join Today • Instant Whitelist",
-              iconURL: client.user?.displayAvatarURL(),
+              text: "Noxx Roleplay • Instant Whitelist",
             })
             .setTimestamp(),
         ],
@@ -105,23 +98,33 @@ async function sendReminder(client: Client): Promise<void> {
   }
 }
 
+/**
+ * Manual function.
+ * Call this from a command to instantly post the announcement.
+ */
+export async function postWhitelistAnnouncement(client: Client): Promise<void> {
+  await sendReminder(client);
+}
+
+/**
+ * Starts the automatic hourly reminder.
+ */
 export function startWhitelistReminder(client: Client): void {
   if (reminderInterval) {
     logger.info("Whitelist reminder is already running.");
     return;
   }
 
-  // Send immediately when the bot starts
+  // Send one immediately when the bot starts
   sendReminder(client).catch((err) =>
     logger.error({ err }, "Initial whitelist reminder failed.")
   );
 
-  // Repeat every hour
   reminderInterval = setInterval(() => {
     sendReminder(client).catch((err) =>
       logger.error({ err }, "Whitelist reminder interval failed.")
     );
   }, INTERVAL_MS);
 
-  logger.info("NOXX Roleplay whitelist reminder started.");
+  logger.info("Whitelist reminder started.");
 }
