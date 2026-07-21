@@ -4,6 +4,7 @@ import * as postPanel from "./post-panel.js";
 import * as setupWhitelistRole from "./setup-whitelist-role.js";
 import * as setupWhitelistChannel from "./setup-whitelist-channel.js";
 import * as setupNeedWhitelistRole from "./setup-need-whitelist-role.js";
+import * as announcement from "./announcement.js";
 
 export interface Command {
   data: { name: string; toJSON: () => unknown };
@@ -16,6 +17,7 @@ const commands: Command[] = [
   setupWhitelistRole,
   setupWhitelistChannel,
   setupNeedWhitelistRole,
+  announcement,
 ];
 
 export function registerCommands(client: Client) {
