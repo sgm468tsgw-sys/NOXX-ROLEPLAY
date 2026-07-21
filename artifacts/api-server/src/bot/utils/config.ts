@@ -1,9 +1,8 @@
 import { readFile, writeFile, mkdir } from "node:fs/promises";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const DATA_DIR = path.resolve(__dirname, "../../../../data");
+// Use process.cwd() (workspace root) so the path survives esbuild bundling
+const DATA_DIR = path.join(process.cwd(), "artifacts", "api-server", "data");
 const CONFIG_PATH = path.join(DATA_DIR, "guild-config.json");
 
 export interface TicketInfo {
