@@ -2,6 +2,7 @@ import { REST, Routes } from "discord.js";
 import type { Client } from "discord.js";
 import { commands } from "../commands/index.js";
 import { logger } from "../../lib/logger.js";
+import { startWhitelistReminder } from "../tasks/whitelistReminder.js";
 
 export function registerReady(client: Client) {
   client.once("ready", async (c) => {
@@ -23,5 +24,7 @@ export function registerReady(client: Client) {
     } catch (err) {
       logger.error({ err }, "Failed to register slash commands");
     }
+
+    startWhitelistReminder(c);
   });
 }
